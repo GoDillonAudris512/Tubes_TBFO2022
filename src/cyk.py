@@ -7,19 +7,25 @@ from numpy import triu
 from itertools import product
 import random
 
+"abbaa"
+
 class Cell():
+    # Memasukkan inputan
     def __init__(self):
         self.cellruleset = []
     
+    # Menambah inputan ke dalam ruleset
     def addToRules(self,ruleitem):
         for item in ruleitem:
             if not item in self.cellruleset:
                 self.cellruleset.append(item)
 
 class CYK():
+    # CGF RULES di isi sesuai CFG rules yang dibuat kelompok
     def __init__(self,folderpath):
         self.cfgrules = self.rules(folderpath)
 
+    # The retrieve_words method gets the words from rules
     def retrieve_words(self):
         grammaticals = set()
         for vals in self.cfgrules.values():
@@ -38,6 +44,7 @@ class CYK():
 
         return words
 
+    # Mengembalikan kata-kata yang berada di sebelah kiri
     def get_left(self,right):
         rightvalue = right
         if isinstance(right,list):
@@ -54,6 +61,9 @@ class CYK():
                     if k in vr:
                         lv.append(kr)
         return lv
+
+    # Making a triangular table, n columns, n rows
+    # terminal words
     def create_init_matrix(self,test_sentencelist):
         length_sentence = len(test_sentencelist)
         matrix = []
@@ -65,12 +75,19 @@ class CYK():
             matrix.append(m)
         triumatrix = triu(matrix,0)
         return triumatrix
+
+    # Membuat produk yang terdiri dari setiap sel di kolom dihubungkan dengan sel pada baris
+    # (A,B), (A,C), (A,D), (B,C), (B,D), (C,D)
     def production(self,ruleset1,ruleset2):
         lst = product(ruleset1,ruleset2)   
         return lst
+
+    # Menggabungkan 2 buah list
     def Union(self,lst1, lst2): 
         final_list = list(lst1) + list(lst2) 
         return list(final_list)
+
+    # Algoritma CYK Parsing
     def CYKParser(self,test_sentence):
         test_sentence = test_sentence.rstrip(".")
         test_sentence = test_sentence.rstrip("?")
