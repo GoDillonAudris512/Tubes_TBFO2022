@@ -53,7 +53,7 @@ def convert_long(list):
         
 
 
-def load(path = r"src/cfg.txt"):
+def load(path = r"cfg2.txt"):
     global dict_list
     f = open(path, "r")
 
