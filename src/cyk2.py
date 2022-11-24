@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from dfa import rules
+from cfg_to_cnf import dict_list
 import argparse
 
 def findRules(charItem):
@@ -8,7 +8,7 @@ def findRules(charItem):
 	#Specific charItem
 	rulesFound = []
 	#Iterate trough rules from grammar.py
-	for i,j in rules.items():
+	for i,j in dict_list.items():
 		for rule in j:
 			#if a rule is found add it to the end of the list
 			#Double check for multiple rules
@@ -89,8 +89,8 @@ def checkCombinations(array, possibleProductions, diagList, currentLength, curre
 				elif(tempDiag == ['EMPTY']):
 					dummy = 9
 				else:
-					searchC = ''.join(item for item in tempPos + tempDiag)
-					for k, l in rules.items():
+					searchC = ''.join(item for item in tempPos + " " + tempDiag)
+					for k, l in dict_list.items():
 						for rule in l:
 							if rule == searchC:
 								rulesFound.append(k)
@@ -118,35 +118,35 @@ def parse(tWORD, array, i):
 
 	return array
 
-def main():
-	parser = argparse.ArgumentParser(description="CYK Parser in Python")
-	group = parser.add_mutually_exclusive_group()
-	parser.add_argument("WORD", type=str, help="word to parse")
-	args = parser.parse_args()
-	tWORD = args.WORD
+# def main():
+# 	parser = argparse.ArgumentParser(description="CYK Parser in Python")
+# 	group = parser.add_mutually_exclusive_group()
+# 	parser.add_argument("WORD", type=str, help="word to parse")
+# 	args = parser.parse_args()
+# 	tWORD = args.WORD
 
-	array = initArray(tWORD)
-	array = parseFirst(tWORD, array)
-	height = len(tWORD) - 1
-	for i in range(1, len(tWORD)):
-		array = parse(tWORD, array, i)
-	#print(array)
+# 	array = initArray(tWORD)
+# 	array = parseFirst(tWORD, array)
+# 	height = len(tWORD) - 1
+# 	for i in range(1, len(tWORD)):
+# 		array = parse(tWORD, array, i)
+# 	#print(array)
 
-	checkWord = array[height][0]
-	if(checkWord == 0):
-		print("Word cant be built with the given Grammar")
+# 	checkWord = array[height][0]
+# 	if(checkWord == 0):
+# 		print("Word cant be built with the given Grammar")
 
-	else:
-		possible = False
-		for h in range(len(checkWord)):
-			if(checkWord[h] == 'S'):
-				possible = True
-		if(possible == True):
-			print("Word can be built with the given Grammar")
-			print(array)
-		else:
-			print("Word cant be built with the given Grammar")
+# 	else:
+# 		possible = False
+# 		for h in range(len(checkWord)):
+# 			if(checkWord[h] == 'S'):
+# 				possible = True
+# 		if(possible == True):
+# 			print("Word can be built with the given Grammar")
+# 			print(array)
+# 		else:
+# 			print("Word cant be built with the given Grammar")
 
 
-if __name__ == "__main__":
-	main()
+# if __name__ == "__main__":
+# 	main()
