@@ -6,6 +6,7 @@ import numpy as np
 from numpy import triu
 from itertools import product
 import random
+# import folderpath
 
 "abbaa"
 
@@ -89,7 +90,7 @@ class CYK():
 
     # Algoritma CYK Parsing
     def CYKParser(self,test_sentence):
-        test_sentence = test_sentence.rstrip(".")
+        test_sentence = test_sentence.rstrip(".") 
         test_sentence = test_sentence.rstrip("?")
         test_sentencelist=test_sentence.split()
         lentest = len(test_sentencelist)
@@ -140,7 +141,7 @@ class CYK():
             line = line.rstrip("\n")
             line = line.rstrip(" ")
             line  = line.split("\t")
-            if not "#" in line:
+            if not "//" in line:
                 if len(line)==2:
                     line[0]= line[0].rstrip(" ")
                     try:
