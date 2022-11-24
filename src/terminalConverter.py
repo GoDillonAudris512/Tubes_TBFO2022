@@ -52,7 +52,8 @@ terminalDictionary = [
                     ["*=", "'MULTIPLY_ASSIGNMENT'"],
                     ["/=", "'DIVIDE_ASSIGNMENT'"],
                     ["%=", "'MODULO_ASSIGNMENT'"],
-                    ["**=", "'EXPONENT_ASSIGNMENT'"]
+                    ["**=", "'EXPONENT_ASSIGNMENT'"],
+                    [".", "'DOT'"]
                     ]
 
 def getTerminal(input):
@@ -62,10 +63,14 @@ def getTerminal(input):
         if (input == rule[0]):
             return rule[1]
 
-    return "'OBJECT'"
+    try:
+        temp = int(input)
+        return "'NUM'"
+    except:
+        return "'OBJECT'"
 
 def convertToTerminal(inputLine):
-    startingTerminal = ["{", "}", "[", "]", "(", ")", "+", "-", "*", "%", "~", "<", ">", "^", "&", "|", "!", "="]
+    startingTerminal = ["{", "}", "[", "]", "(", ")", "+", "-", "*", "%", "~", "<", ">", "^", "&", "|", "!", "=", "."]
     uncomplete = ["+", "-", "*", "**", "/", "%", "<", ">", ">>", "&", "|", "=", "==", "!", "!="]
     complement = ["+", "-", "*", "<", ">", "&", "|", "="]
     terminal = []
