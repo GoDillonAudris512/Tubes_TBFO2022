@@ -1,7 +1,4 @@
-# CFG = {}       # stores rules
-
-
-
+     
 """
 CNF
 Start symbol generating ε. For example, A → ε.
@@ -10,7 +7,7 @@ A non-terminal generating a terminal. For example, S → a.
 """
 
 
-def generate_var(start_char = 'U', mod = 10):
+def generate_var(start_char = 'A', mod = 10):
     global count_var 
     var = chr(ord(start_char) + int(count_var/mod)) + str(count_var%mod)
     count_var += 1
@@ -40,7 +37,6 @@ def convert_long(list):
         return temp
     else :
         temp = list[:]
-        # print(temp)
         var_used = []
         i = 0
         while (i < len(temp) - (len(temp) % 2)):
@@ -90,6 +86,7 @@ def load(path = r"src/cfg.txt"):
                 list = convert_long(list_of_var_used)
                 dict_list.append([LHS] + [list])
 
+CFG = {}  
 dict_list = []
 count_var = 0
 if __name__ == "__main__":
