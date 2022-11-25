@@ -32,7 +32,7 @@ def load_grammar_as_cnf(filename, write_to_file = False):
 
     for rule in list_grammar:
         temp_rules = []
-        if len(rule) == 2 and not is_terminal(rule[0]):
+        if len(rule) == 2 and rule[1][0] != "'":
             # Rule is in form A -> X, so back it up for later and continue with the next rule.
             unit_productions.append(rule)
             insert(rule)
@@ -85,6 +85,6 @@ def load_grammar_as_cnf(filename, write_to_file = False):
 
     return result
 
-# path = (r"./src/cfg.txt")
-# load_grammar_as_cnf(path)
-# print(CFG)
+path = (r"./src/cfg2.txt")
+load_grammar_as_cnf(path, True)
+print(CFG)
