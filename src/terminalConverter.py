@@ -109,33 +109,33 @@ def convertToTerminal(inputLine):
         if (inputLine[i] == " "):
             if (tempWord != ""):
                 terminal.append(getTerminal(tempWord))
-                if (terminal[len(terminal) - 1] == "'OBJECT'" and ((not tempWord.startswith('"') and not tempWord.endswith('"')) or (not tempWord.startswith("'") and not tempWord.endswith("'"))) and not ignoreVar):
+                if (terminal[len(terminal) - 1] == "'OBJECT'"  and not ignoreVar):
                     varName.append(tempWord)
             tempWord = ""
         elif ((tempWord not in uncomplete) and (inputLine[i] in uncomplete)):
             if (tempWord != ""):
                 terminal.append(getTerminal(tempWord))
-                if (terminal[len(terminal) - 1] == "'OBJECT'" and ((not tempWord.startswith('"') and not tempWord.endswith('"')) and (not tempWord.startswith("'") and not tempWord.endswith("'"))) and not ignoreVar):
+                if (terminal[len(terminal) - 1] == "'OBJECT'"  and not ignoreVar):
                     varName.append(tempWord)
             tempWord = inputLine[i]
         elif (tempWord in uncomplete and inputLine[i] in complement):
             tempWord += inputLine[i]
             if (tempWord not in uncomplete):
                 terminal.append(getTerminal(tempWord))
-                if (terminal[len(terminal) - 1] == "'OBJECT'" and ((not tempWord.startswith('"') and not tempWord.endswith('"')) or (not tempWord.startswith("'") and not tempWord.endswith("'"))) and not ignoreVar):
+                if (terminal[len(terminal) - 1] == "'OBJECT'"  and not ignoreVar):
                     varName.append(tempWord)
                 tempWord = ""
         elif (tempWord in startingTerminal):
             if (tempWord not in uncomplete or inputLine[i] not in startingTerminal):
                 terminal.append(getTerminal(tempWord))
-                if (terminal[len(terminal) - 1] == "'OBJECT'" and ((not tempWord.startswith('"') and not tempWord.endswith('"')) or (not tempWord.startswith("'") and not tempWord.endswith("'"))) and not ignoreVar):
+                if (terminal[len(terminal) - 1] == "'OBJECT'"  and not ignoreVar):
                     varName.append(tempWord)
                 tempWord = inputLine[i]
             else:
                 tempWord += inputLine[i]
         elif (inputLine[i] in startingTerminal and (tempWord not in uncomplete and tempWord != "")):
             terminal.append(getTerminal(tempWord))
-            if (terminal[len(terminal) - 1] == "'OBJECT'" and ((not tempWord.startswith('"') and not tempWord.endswith('"')) or (not tempWord.startswith("'") and not tempWord.endswith("'"))) and not ignoreVar):
+            if (terminal[len(terminal) - 1] == "'OBJECT'"  and not ignoreVar):
                 varName.append(tempWord)
             tempWord = inputLine[i]
         else:
@@ -143,7 +143,7 @@ def convertToTerminal(inputLine):
 
     if (tempWord != ""):
         terminal.append(getTerminal(tempWord))
-        if (terminal[len(terminal) - 1] == "'OBJECT'" and ((not tempWord.startswith('"') and not tempWord.endswith('"')) or (not tempWord.startswith("'") and not tempWord.endswith("'"))) and not ignoreVar):
+        if (terminal[len(terminal) - 1] == "'OBJECT'"  and not ignoreVar):
             varName.append(tempWord)
 
     return terminal, varName

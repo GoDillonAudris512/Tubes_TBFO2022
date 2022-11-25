@@ -24,7 +24,7 @@ def convertInputSymbol(char):
         return 'lowerCase'
     elif (char in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']):
         return 'number'
-    elif (char in ['$', '_']):
+    elif (char in ['$', '_', "'", '"']):
         return 'specialSign'
     else:
         return 'else'
@@ -36,13 +36,19 @@ def transitions(currentState, inputSymbol):
         if (trans[0] == currentState and trans[1] == inputSymbol):
             return trans[2]
 
-def checkWithDFA(varName):
+def checkWithDFA(varName, stringStack):
     i = 0
+    stack = stringStack
     currentState = 'start'
 
     while (i < len(varName)):
         inputSymbol = convertInputSymbol(varName[i])
         currentState = transitions(currentState, inputSymbol)
+        if (varName[i] == "'" or varName[i] == '"'):
+            if (stack != [] and stack[-1] == varName[i]):
+                stack.pop()
+            else:
+                stack.append(varName[i])
         i += 1
-    
-    return currentState == 'final'
+
+    return currentState == 'final', stack

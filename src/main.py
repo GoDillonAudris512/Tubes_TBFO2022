@@ -27,6 +27,8 @@ ableToDefault = False
 stackOfCurlyBrackets = []
 string = ""
 table = [[]]
+stackOfString =[]
+valid = True
 
 # PROGRAM UTAMA
 argument = argparse.ArgumentParser() 
@@ -88,7 +90,6 @@ else:
                 table = parseFirst(terminalsOfCode, table)
                 for j in range(1, height+1):
                     table = parse(terminalsOfCode, table, j)
-                
                 print(table)
                 if (table[height][0] == 0):
                     isAccepted = False
@@ -100,6 +101,8 @@ else:
                             break
                         else:
                             isAccepted = False
+                            errorFlag = 7
+                            break
 
             if (isAccepted):
                 if ("'CURFEW_CLOSE'" in terminalsOfCode and "'CURFEW_CLOSE'" == terminalsOfCode[0]):
@@ -222,10 +225,16 @@ else:
                         break  
 
                 for var in varNameToCheck:
-                    if (not checkWithDFA(var)):
+                    valid, stackOfString = checkWithDFA(var, stackOfString)
+                    if (not valid):
                         isAccepted = False
                         errorFlag = 5
                         break
+                
+                if (stackOfString != []):
+                    isAccepted = False
+                    errorFlag = 5
+                    break
                 
                 if ("'CURFEW_CLOSE'" in terminalsOfCode and "'CURFEW_CLOSE'" != terminalsOfCode[0]):
                     if (len(stackOfCurlyBrackets) == 0):
@@ -251,7 +260,7 @@ else:
                         stackOfCurlyBrackets.pop()
         i += 1
 
-    if (errorFlag != 0):
+    if (errorFlag != 0 and errorFlag != 7):
         i += 1
 
     if (isAccepted):
@@ -280,6 +289,7 @@ else:
             print("\033[93m{}\033[00m".format("Error : Variable name not permitted"))
         elif (errorFlag == 6):
             print("\033[93m{}\033[00m".format("Error : Case or default statements is not started by any switch statements"))
+        elif (errorFlag == 7):
+            print("\033[93m{}\033[00m".format("Error : Unknown symbol detected when parsing"))
         elif (errorFlag == 10):
             print("\033[93m{}\033[00m".format("Error : Unknown symbol detected. Possibly because comment formatting"))
-
