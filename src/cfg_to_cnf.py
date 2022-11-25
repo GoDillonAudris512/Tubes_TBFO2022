@@ -1,7 +1,3 @@
-# CFG = {}       # stores rules
-
-
-
 """
 CNF
 Start symbol generating ε. For example, A → ε.
@@ -9,6 +5,15 @@ A non-terminal generating two non-terminals. For example, S → AB.
 A non-terminal generating a terminal. For example, S → a.
 """
 
+# def get_key(val):
+#     global CFG
+#     keys = [k for k, v in CFG.items() if (val == v[0] and len(v) == 1)]
+#     if keys:
+#         return keys[0]
+#     return None
+
+# CFG = {"A" : [1]}
+# print(get_key(1))
 
 def generate_var(start_char = 'A', mod = 10):
     global count_var 
@@ -16,88 +21,181 @@ def generate_var(start_char = 'A', mod = 10):
     count_var += 1
     return var
 
-def print_dictionary(dict, indent=0):
-   for key, value in dict.items():
-      print('\t' * indent + str(key))
-      if isinstance(value, dict):
-         print_dictionary(value, indent+1)
-      else:
-         print('\t' * (indent+1) + str(value))
+# def assign(rule):
+#     var = find_term_var(rule)
+#     if var is None:
+#         assign_to_new_var(rule)
+#     else :
+        
+
+def assign_to_new_var(rule):
+    global CFG
+    var = generate_var()
+    CFG[f"{var}"] = [rule]
+    return var
+
+def insert(key, val):
+    global CFG
+    if key in CFG:
+       CFG[f"{key}"].append(val)
+    else :
+        CFG[f"{key}"] = [val]
 
 def is_terminal(string):
-    return string[0] == "'" and string[len(string) - 1] == "'"
+    return string[0] == "'"
+
+def find_long_prod():
+    global CFG
+    result = []
+    for (k, v) in CFG.items():
+        for i in range (len(v)):
+            l_rule = v[i].split()
+            if len(l_rule) >= 2:
+                result.append([k,v,i])
+            else:
+                continue
+    return result
+
+def convert_long_prod():
+    global CFG
+    long_prod_list = find_long_prod()
+    # print(long_prod_list)
+    for (k, v, i) in long_prod_list:
+        l_rule = v[i].split()
+        v[i] = arr_to_string(convert_long(l_rule))
+        # for i in range (len(temp)):
+        #     l_rule = temp[i].split()
+        #     if len(l_rule) >= 2:
+        #         temp[i] = arr_to_string(convert_long(l_rule))
+        #     else:
+        #         continue
+        CFG[k] = v
+    
 
 def convert_long(list):
-    global dict_list
-
-    if len(list) == 2 or len(list) == 1:
-        return list[:]
+    global CFG
+    if len(list) == 2:
+        return list
     elif len(list) == 3:
         temp = list[:]
-        var = generate_var()
-        dict_list.append([var] + [list[1:3]])
+        var = assign_to_new_var(arr_to_string(list[1:3]))
         temp[1:3] = [var]
         return temp
     else :
         temp = list[:]
-        # print(temp)
         var_used = []
         i = 0
         while (i < len(temp) - (len(temp) % 2)):
             rule_subs = temp[i:i+2]
-            try :
-                idx = ([i[1] for i in dict_list]).index(rule_subs)
-                var_used.append(dict_list[idx][0])
-            except:
-                var = generate_var()
-                var_used.append(var)
-                dict_list.append([var] + [rule_subs])
+            str_rule_subs = arr_to_string(rule_subs)
+            var = assign_to_new_var(str_rule_subs)           
+            var_used.append(var)
             i += 2
+        if (len(temp) % 2 == 1) : 
+            var_used.append(temp[len(temp) - 1])            
         return convert_long(var_used)
         
+def arr_to_string(arr):
+    result = ""
+    for i in range (len(arr) - 1):
+        result += arr[i] + ' '
+    for i in range (len(arr) - 1, len(arr)):
+        result += arr[i]
+    return result
 
-
-def load(path = r"cfg2.txt"):
-    global dict_list
+def find_unit_prod():
+    global CFG
+    result = []
+    for (k, v) in CFG.items():
+        temp = []
+        # print("b",k, temp, len(temp))
+        for i in range (len(v)):
+            # print(len(temp))
+            # try : 
+            l_rule = v[i].split()
+            # except:
+            #     print("a",k, temp)
+            if (len(l_rule) == 1 and not is_terminal(l_rule[0])):
+                l_prod = CFG[f"{l_rule[0]}"]
+                for prod in l_prod:
+                    temp.append(prod)
+            else :
+                temp.append(v[i])
+                # var  = l_rule[0]
+                # temp.remove(var)
+                # try :
+                #     temp.append(prod for prod in CFG[f"{var}"])
+                #     subs = []
+                #     temp[i] = arr_to_string(l_rule)
+                # except:
+                #     print("DEBUG")
+                #     print(l_rule)
+                #     break
+                #     # print("DEBUG")
+                #     # CFG[f"{l_rule[0]}"]
+                    # print(l_rule[0])    
+        result.append([k, temp])
+    return result
+def remove_unit_prod():
+    global CFG
+    unit_prod_list = find_unit_prod()
+    for (k, prod) in unit_prod_list:
+        CFG[k] = prod
+        
+def load(path = r"cfg.txt"):
+    """
+    membaca file grammar dan memasukkan ke dictionary
+    """
     f = open(path, "r")
 
     for line in f.readlines():
-        line = line.strip().split('->')
+        # Memisahkan LHS dan RHS
+        line = line.strip().split('->') 
         LHS = line[0].strip()
         RHS = line[1:][0].split('|')
 
         for expression in RHS:
-            rules = expression.split()
-            # print(rules)
-            # terminal
+            insert(LHS, expression.lstrip().rstrip())
 
-            if (len(rules) == 1 ) and (is_terminal(rules[0])):
-                dict_list.append([LHS] + [rules])
-            else :
-                list_of_var_used = []
-                for rule in rules:
-                    # print(rule)
-                    if is_terminal(rule):
-                        try:
-                            idx = ([i[1] for i in dict_list]).index(rule)
-                            list_of_var_used.append(dict_list[idx][1])
-                        except:
-                            var = generate_var()
-                            dict_list.append([var] + [[rule]])
-                            list_of_var_used.append(var)
-                    else : 
-                        list_of_var_used.append(rule)
-                list = convert_long(list_of_var_used)
-                dict_list.append([LHS] + [list])
+def find_term_var(val):
+    """
+    mencari variable yang berkoresponden dengan terminal
+    """
+    global CFG
+    keys = [k for k, v in CFG.items() if (val in v)]
+    if len(keys) != 0:
+        return keys[0]
+    else :
+        return None
 
-dict_list = []
+def find_unassinged_terminal():
+    """
+    mencari terminal yang belum di assign ke suatu variable
+    """
+    global CFG
+    result = []
+    for (k, v) in CFG.items():
+        for rule in v:
+            components = rule.split()
+            for component in components:
+                if is_terminal(component):
+                    var = find_term_var(component)
+                    if var is None:
+                        result.append(component)
+                    else: 
+                        continue
+                else: 
+                    continue
+def assign_unassigned_terminal():
+    """
+    Menambahkan variable menuju terminal jika belum ada variable yang menuju terminal
+    """
+    unassigned_terminal = find_unassinged_terminal()
+    if unassigned_terminal is not None :
+        for terminal in unassigned_terminal:
+            assign_to_new_var(terminal)
+    else :
+        return
+
+CFG = {}
 count_var = 0
-if __name__ == "__main__":
-    from tabulate import tabulate
-    load()
-    print(tabulate(dict_list))
-    print(len(dict_list))
-
-
-
-

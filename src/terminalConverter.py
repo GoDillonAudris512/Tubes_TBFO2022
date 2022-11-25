@@ -3,6 +3,7 @@ terminalDictionary = [
                     ["else", "'ELSE'"],
                     ["switch", "'SWITCH'"],
                     ["case", "'CASE'"],
+                    ["default", "'DEFAULT'"],
                     ["for", "'FOR'"],
                     ["while", "'WHILE'"],
                     ["const", "'CONST'"],
@@ -10,16 +11,21 @@ terminalDictionary = [
                     ["let", "'LET'"],
                     ["break", "'BREAK'"],
                     ["continue", "'CONTINUE'"],
+                    ["function", "'FUNCTION'"],
+                    ["return", "'RETURN'"],
+                    ["try", "'TRY'"],
+                    ["catch", "'CATCH'"],
                     ["throw", "'THROW'"],
                     ["finally", "'FINALLY'"],
-                    ["true", "'BOOL_TRUE'"],
-                    ["false", "'BOOL_FALSE'"],
+                    ["true", "'TRUE'"],
+                    ["false", "'FALSE'"],
+                    ["null", "'NULL'"],
                     ["(", "'PAREN_OPEN'"],
                     [")", "'PAREN_CLOSE'"],
                     ["[", "'BRACKET_OPEN'"],
                     ["]", "'BRACKET_CLOSE'"],
-                    ["{", "'CURLY_BRACKET_OPEN'"],
-                    ["}", "'CURLY_BRACKET_CLOSE'"],
+                    ["{", "'CURFEW_OPEN'"],
+                    ["}", "'CURFEW_CLOSE'"],
                     ["+", "'PLUS_OP'"],
                     ["-", "'MINUS_OP'"],
                     ["*", "'MULTIPLY_OP'"],
@@ -53,7 +59,21 @@ terminalDictionary = [
                     ["/=", "'DIVIDE_ASSIGNMENT'"],
                     ["%=", "'MODULO_ASSIGNMENT'"],
                     ["**=", "'EXPONENT_ASSIGNMENT'"],
-                    [".", "'DOT'"]
+                    ["&=", "'AND_ASSIGNMENT'"],
+                    ["|=", "'OR_ASSIGNMENT'"],
+                    ["^=", "'XOR_ASSIGNMENT'"],
+                    ["&&=", "'AND_LOP_ASSIGNMENT'"],
+                    ["||=", "'OR_LOP_ASSIGNMENT'"],
+                    ["?", "'TERNARY'"],
+                    ["??", "'NULLISH'"],
+                    ["??=", "'NULLISH_ASSIGNMENT'"],
+                    [".", "'DOT'"],
+                    [",", "'COMMA'"],
+                    ["//", "'DOUBLE_SLASH'"],
+                    ["/*", "'OPEN_SLASH'"],
+                    ["*/", "'CLOSE_SLASH'"],
+                    [":", "'COLON'"],
+                    [";", "'SEMICOLON'"]
                     ]
 
 def getTerminal(input):
@@ -70,43 +90,63 @@ def getTerminal(input):
         return "'OBJECT'"
 
 def convertToTerminal(inputLine):
-    startingTerminal = ["{", "}", "[", "]", "(", ")", "+", "-", "*", "%", "~", "<", ">", "^", "&", "|", "!", "=", "."]
-    uncomplete = ["+", "-", "*", "**", "/", "%", "<", ">", ">>", "&", "|", "=", "==", "!", "!="]
-    complement = ["+", "-", "*", "<", ">", "&", "|", "="]
+    startingTerminal = ["{", "}", "[", "]", "(", ")", "+", "-", "*", "%", "~", "<", ">", "^", "&", "|", "!", "=", ".", ",", ":", ";", "?"]
+    uncomplete = ["+", "-", "*", "**", "/", "%", "<", ">", ">>", "&", "|", "=", "==", "!", "!=", "^", "&&", "||", "?", "??"]
+    complement = ["+", "-", "*", "<", ">", "&", "|", "=", "/", "?"]
     terminal = []
+    varName = []
     tempWord = ""
+    ignoreVar = False
 
     for i in range (len(inputLine)):
+        if (terminal != [] and terminal[len(terminal) - 1] == "'DOUBLE_SLASH'"):
+            ignoreVar = True
+            break
+        if (terminal != [] and terminal[len(terminal) - 1] == "'OPEN_SLASH'"):
+            ignoreVar = True
+        if (terminal != [] and terminal[len(terminal) - 1] == "'CLOSE_SLASH'"):
+            ignoreVar = False
         if (inputLine[i] == " "):
             if (tempWord != ""):
                 terminal.append(getTerminal(tempWord))
+                if (terminal[len(terminal) - 1] == "'OBJECT'" and ((not tempWord.startswith('"') and not tempWord.endswith('"')) or (not tempWord.startswith("'") and not tempWord.endswith("'"))) and not ignoreVar):
+                    varName.append(tempWord)
             tempWord = ""
         elif ((tempWord not in uncomplete) and (inputLine[i] in uncomplete)):
             if (tempWord != ""):
                 terminal.append(getTerminal(tempWord))
+                if (terminal[len(terminal) - 1] == "'OBJECT'" and ((not tempWord.startswith('"') and not tempWord.endswith('"')) and (not tempWord.startswith("'") and not tempWord.endswith("'"))) and not ignoreVar):
+                    varName.append(tempWord)
             tempWord = inputLine[i]
         elif (tempWord in uncomplete and inputLine[i] in complement):
             tempWord += inputLine[i]
             if (tempWord not in uncomplete):
                 terminal.append(getTerminal(tempWord))
+                if (terminal[len(terminal) - 1] == "'OBJECT'" and ((not tempWord.startswith('"') and not tempWord.endswith('"')) or (not tempWord.startswith("'") and not tempWord.endswith("'"))) and not ignoreVar):
+                    varName.append(tempWord)
                 tempWord = ""
         elif (tempWord in startingTerminal):
             if (tempWord not in uncomplete or inputLine[i] not in startingTerminal):
                 terminal.append(getTerminal(tempWord))
+                if (terminal[len(terminal) - 1] == "'OBJECT'" and ((not tempWord.startswith('"') and not tempWord.endswith('"')) or (not tempWord.startswith("'") and not tempWord.endswith("'"))) and not ignoreVar):
+                    varName.append(tempWord)
                 tempWord = inputLine[i]
             else:
                 tempWord += inputLine[i]
-        elif (inputLine[i] in startingTerminal and (tempWord not in uncomplete)):
-            if (tempWord != ""):
-                terminal.append(getTerminal(tempWord))
+        elif (inputLine[i] in startingTerminal and (tempWord not in uncomplete and tempWord != "")):
+            terminal.append(getTerminal(tempWord))
+            if (terminal[len(terminal) - 1] == "'OBJECT'" and ((not tempWord.startswith('"') and not tempWord.endswith('"')) or (not tempWord.startswith("'") and not tempWord.endswith("'"))) and not ignoreVar):
+                varName.append(tempWord)
             tempWord = inputLine[i]
         else:
             tempWord += inputLine[i]
 
     if (tempWord != ""):
         terminal.append(getTerminal(tempWord))
+        if (terminal[len(terminal) - 1] == "'OBJECT'" and ((not tempWord.startswith('"') and not tempWord.endswith('"')) or (not tempWord.startswith("'") and not tempWord.endswith("'"))) and not ignoreVar):
+            varName.append(tempWord)
 
-    return terminal
+    return terminal, varName
 
 # Untuk Coba
-# print(convertToTerminal(r"if (x>= 10 && (y+10 == 15)) {"))
+# print(convertToTerminal(r"if (x>= 10 && (y+10 ?? 15)) { // ini komen"))

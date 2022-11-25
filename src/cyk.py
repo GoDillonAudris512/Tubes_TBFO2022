@@ -1,180 +1,160 @@
-from collections import defaultdict
-from random import random
-import time
-import sys
 import numpy as np
-from numpy import triu
-from itertools import product
-import random
-# import folderpath
+from tes import CFG
 
-"abbaa"
+def findRules(charItem):
+	#Empty list to collect the rules found for the
+	#Specific charItem
+	rulesFound = []
+	#Iterate trough rules from grammar.py
+	with open("cnf.txt", "r") as cfg:
+		rules = cfg.readlines()
+			#if a rule is found add it to the end of the list
+			#Double check for multiple rules
+	
+	for i, rule in enumerate(rules):
+		rule = rule.replace("->", "").split()
+		if len(rule) == 3:
+			if (rule[1] + " " + rule[2] == charItem):
+				rulesFound.append(rule[0])
+		else:
+			if (rule[1] == charItem):
+				rulesFound.append(rule[0])
 
-class Cell():
-    # Memasukkan inputan
-    def __init__(self):
-        self.cellruleset = []
-    
-    # Menambah inputan ke dalam ruleset
-    def addToRules(self,ruleitem):
-        for item in ruleitem:
-            if not item in self.cellruleset:
-                self.cellruleset.append(item)
+	return rulesFound
 
-class CYK():
-    # CGF RULES di isi sesuai CFG rules yang dibuat kelompok
-    def __init__(self,folderpath):
-        self.cfgrules = self.rules(folderpath)
+def initArray(tWORD):
+	length = len(tWORD)
+	height = length
+	tArray = np.zeros([height, length], list)
+	return tArray
 
-    # The retrieve_words method gets the words from rules
-    def retrieve_words(self):
-        grammaticals = set()
-        for vals in self.cfgrules.values():
-            for val in vals:
-                if val in self.cfgrules.keys() or len(val.split())!=1:
-                    grammaticals.add(val)
+def parseFirst(tWORD, array):
+	length = len(tWORD)
+	height = length
 
-        grammaticals.update(list(self.cfgrules.keys()))
-        grammaticals = list(grammaticals)
-        
-        words = []
-        for vals in self.cfgrules.values():
-            for val in vals:
-                if not val in self.cfgrules.keys() and len(val.split())==1:
-                    words.append(val)
+	#parse first row of array
+	#do this seperatly because if one terminalsymbol
+	#cant be deducted the word cant be build
+	for i in range(length):
+		findC = tWORD[i]
+		foundC = findRules(findC)
+		array[0][i] = foundC
 
-        return words
+	return array
 
-    # Mengembalikan kata-kata yang berada di sebelah kiri
-    def get_left(self,right):
-        rightvalue = right
-        if isinstance(right,list):
-            rightvalue = ""
-            for token in right: 
-                rightvalue+=token+" "
+def getDiag(array, possibleProductions, currentLength, currentHeight, length, i, diagList):
+	#Get Diagonal item from array
+	#Diag length is the current height + the current length
+	indexDiagLenght = currentHeight + currentLength
+	indexDiagHeight = 0
+	for diagLoopIndex in range(currentHeight):
+		tempDiag = array[indexDiagHeight][indexDiagLenght]
+		if(tempDiag == 0):
+			tempDiag = ['EMPTY']
+			diagList.append(tempDiag)
+		else:
+			diagList.append(tempDiag)
+		#MOVE DIAG LEFT UP
+		indexDiagLenght = indexDiagLenght - 1
+		indexDiagHeight = indexDiagHeight + 1
+	return diagList
 
-            rightvalue.rstrip(" ") 
-        lv = []
-        for k,v in self.cfgrules.items():
-            if rightvalue in v:
-                lv.append(k)
-                for kr,vr in self.cfgrules.items():
-                    if k in vr:
-                        lv.append(kr)
-        return lv
 
-    # Making a triangular table, n columns, n rows
-    # terminal words
-    def create_init_matrix(self,test_sentencelist):
-        length_sentence = len(test_sentencelist)
-        matrix = []
-        for y in range(length_sentence):
-            m = [Cell() for l in range(length_sentence)]
-            for x in range(length_sentence):   
-                if x==y:
-                    m[x].addToRules(self.get_left(test_sentencelist[x]))
-            matrix.append(m)
-        triumatrix = triu(matrix,0)
-        return triumatrix
 
-    # Membuat produk yang terdiri dari setiap sel di kolom dihubungkan dengan sel pada baris
-    # (A,B), (A,C), (A,D), (B,C), (B,D), (C,D)
-    def production(self,ruleset1,ruleset2):
-        lst = product(ruleset1,ruleset2)   
-        return lst
+def getDown(array, possibleProductions, currentHeight, currentLength):
+	for indexHeight in range(currentHeight):
+		tempSignal = array[indexHeight][currentLength]
+		if(tempSignal == 0):
+			#Add a empty element so both lists keep the same length
+			possibleProductions.append(['EMPTY'])
+		else:
+			possibleProductions.append(tempSignal)
+	#Reverse list because algorithm usually works the other way around
+	possibleProductions.reverse()
+	return possibleProductions
 
-    # Menggabungkan 2 buah list
-    def Union(self,lst1, lst2): 
-        final_list = list(lst1) + list(lst2) 
-        return list(final_list)
 
-    # Algoritma CYK Parsing
-    def CYKParser(self,test_sentence):
-        test_sentence = test_sentence.rstrip(".") 
-        test_sentence = test_sentence.rstrip("?")
-        test_sentencelist=test_sentence.split()
-        lentest = len(test_sentencelist)
-        cykmatrix = self.create_init_matrix(test_sentencelist)
-        iu1 = np.triu_indices(lentest)
-        suits = []
-        for i1,i2 in zip(iu1[0],iu1[1]):
-            suits.append((i1,i2))
-        for k in range(lentest-1):
-            i,j = k,k+1     
-            x = self.production(cykmatrix[i][i].cellruleset,cykmatrix[i+1][j].cellruleset)
-            for ii in list(x):
-                tok = ""
-                for ij in ii:
-                    tok += ij+" " 
-                cykmatrix[i][j].addToRules(self.get_left(tok.rstrip(" ")))
-        for n in range(2,lentest):
-            for k in range(lentest-n):   
-                i,j = k,k+n
-                x1 = self.production(cykmatrix[i][i].cellruleset,cykmatrix[i+1][j].cellruleset)
-                x2 = self.production(cykmatrix[i][i+1].cellruleset,cykmatrix[i+2][j].cellruleset)       
-                uni = self.Union(x1,x2)
-                for ii in uni:
-                    tok = ""
-                    for ij in ii:
-                        tok += ij+" "         
-                    cykmatrix[i][j].addToRules(self.get_left(tok.rstrip()))
+def checkCombinations(array, possibleProductions, diagList, currentLength, currentHeight):
+	#clear rulesFound for the next field
+	rulesFound = []
+	#range doesnt matter because both lists have the same length
+	for i in range(len(possibleProductions)):
+		#Check for multiple characters in possibleProductions list
+		for u in range(len(possibleProductions[i])):
+			tempPos = possibleProductions[i][u]
+			#Check for multiple characters in diagList
+			for h in range(len(diagList[i])):
+				tempDiag = diagList[i][h]
+				#If one of the two characters is set as empty there cant be a production due to CNF
+				if(tempPos == 'EMPTY'):
+					dummy = 9
+				elif(tempDiag == 'EMPTY'):
+					dummy = 9
+				else:
+					searchC = ''.join(item for item in tempPos + " " +  tempDiag)
+					#Iterate trough rules from grammar.py
+					with open("cnf.txt", "r") as cfg:
+						rules = cfg.readlines()
+							#if a rule is found add it to the end of the list
+							#Double check for multiple rules
+					for temp, rule in enumerate(rules):
+						rule = rule.replace("->", "").split()
+						if len(rule) == 3:
+							if (rule[1] + " " + rule[2] == searchC):
+								rulesFound.append(rule[0])
+					
+	if(len(rulesFound) == 0):
+		#No rules found, dont make a entry
+		return array
+	else:
+		#Rule found enter Rule in field
+		array[currentHeight][currentLength] = rulesFound
+		return array
 
-        #Uncomment to see cyk table
-        '''
-        for i in range(lentest):
-            for j in range(lentest):
-                if (i,j) in suits:
-                    print(i,j,cykmatrix[i][j].cellruleset, end ="\t")
-                              
-            print("\n\t") 
-        '''
-        
-        if 'S' in cykmatrix[0][lentest-1].cellruleset:
-            print("Correct")
-        else:
-            print("Incorrect")
-    def rules(self,folderpath):
-        grammarfile = open(grammerfilepath,'r')
-        unterminaldict = dict()
-        
-        for line in grammarfile.readlines():
-            line = line.rstrip("\n")
-            line = line.rstrip(" ")
-            line  = line.split("\t")
-            if not "//" in line:
-                if len(line)==2:
-                    line[0]= line[0].rstrip(" ")
-                    try:
-                        unterminaldict[line[0]].append(line[1])
-                    except KeyError:
-                        unterminaldict[line[0]] = [line[1]]
-        grammarfile.close()
-        return unterminaldict
 
-    def randsentence(self,words,outputfilename):
-        randsentences = []
-        outfile = open(outputfilename,"w")
-        for sentence_count in range(20):
-            randomsentence = ""
-            for l in range(8):
-                sentpart = str(random.choice(words))
-                if not sentpart in randomsentence.split():
-                    randomsentence+=sentpart+" "
+def parse(tWORD, array, i):
+	length = len(tWORD)
+	currentHeight = i
+	#The algorithm doesnt need to check every field in the array
+	widthLength = length - i
+	for currentLength in range(widthLength):
+		possibleProductions = []
+		diagList = []
+		possibleProductions = getDown(array, possibleProductions, currentHeight, currentLength)
+		diagList = getDiag(array, possibleProductions, currentLength, currentHeight, length, i, diagList)
+		array = checkCombinations(array, possibleProductions, diagList, currentLength, i)
 
-            randomsentence.rstrip(" ")
-            randsentences.append(randomsentence)
-            outfile.write(randomsentence+"\n\n")
-        outfile.close()
-        return randsentences
+	return array
 
-grammerfilepath = "cfg.txt"
-#Model should be created by giving path of grammar file to use
-cykmodel = CYK(grammerfilepath)
+# def main():
+# 	parser = argparse.ArgumentParser(description="CYK Parser in Python")
+# 	group = parser.add_mutually_exclusive_group()
+# 	parser.add_argument("WORD", type=str, help="word to parse")
+# 	args = parser.parse_args()
+# 	tWORD = args.WORD
 
-test_sentence = "i like every fine old sandwich"
-cykmodel.CYKParser(test_sentence)
-# '''
-# #### retrieve_words methos gets the words from rules and given to randsentence() method
-# terminalwords = cykmodel.retrieve_words()
-# outputfilename = "output.txt"
-# cykmodel.randsentence(terminalwords,outputfilename)
+# 	array = initArray(tWORD)
+# 	array = parseFirst(tWORD, array)
+# 	height = len(tWORD) - 1
+# 	for i in range(1, len(tWORD)):
+# 		array = parse(tWORD, array, i)
+# 	#print(array)
+
+# 	checkWord = array[height][0]
+# 	if(checkWord == 0):
+# 		print("Word cant be built with the given Grammar")
+
+# 	else:
+# 		possible = False
+# 		for h in range(len(checkWord)):
+# 			if(checkWord[h] == 'S'):
+# 				possible = True
+# 		if(possible == True):
+# 			print("Word can be built with the given Grammar")
+# 			print(array)
+# 		else:
+# 			print("Word cant be built with the given Grammar")
+
+
+# if __name__ == "__main__":
+# 	main()
