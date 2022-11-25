@@ -5,8 +5,7 @@ import argparse
 
 from dfa import *
 from cyk import *
-from tes import *
-#from cfg_to_cnf import *
+from cfg_to_cnf import *
 from terminalConverter import *
 
 # KAMUS 
@@ -40,7 +39,7 @@ fileName = str(args.fileName)
 if (not isfile(f'test/{fileName}')):
     print('Error: Cannot open the file specified in argument')
 else:
-    convert_grammar(read_grammar(r"cfg2.txt"))
+    load_grammar_as_cnf(r"cfg.txt", True)   
     with open(f'test/{fileName}', 'r') as inputFile:
         lines = inputFile.readlines()
     
@@ -90,7 +89,6 @@ else:
                 table = parseFirst(terminalsOfCode, table)
                 for j in range(1, height+1):
                     table = parse(terminalsOfCode, table, j)
-                print(table)
                 if (table[height][0] == 0):
                     isAccepted = False
                     errorFlag = 7

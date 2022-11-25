@@ -1,5 +1,5 @@
 import numpy as np
-from tes import CFG
+from cfg_to_cnf import CFG
 
 def findRules(charItem):
 	rulesFound = []

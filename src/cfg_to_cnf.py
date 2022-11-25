@@ -85,6 +85,6 @@ def load_grammar_as_cnf(filename, write_to_file = False):
 
     return result
 
-path = (r"./src/cfg2.txt")
-load_grammar_as_cnf(path, True)
-print(CFG)
+# path = (r"./src/cfg2.txt")
+# load_grammar_as_cnf(path, True)
+# print(CFG)
